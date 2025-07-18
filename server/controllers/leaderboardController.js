@@ -1,8 +1,17 @@
-const User = require("../models/user");
+const User = require("../models/User");
 
-const getLeaderboard = async (req, res) => {
-  const topUsers = await User.find().sort({ points: -1 }).limit(10);
-  res.json(topUsers);
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find().sort({ totalPoints: -1 });
+
+    const leaderboard = users.map((user, index) => ({
+      rank: index + 1,
+      name: user.name,
+      totalPoints: user.totalPoints,
+    }));
+
+    res.json(leaderboard);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
 };
-
-module.exports = { getLeaderboard };

@@ -1,15 +1,10 @@
 const mongoose = require("mongoose");
 
-const claimSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  points: Number,
-  claimedAt: {
-    type: Date,
-    default: Date.now,
-  },
+const claimHistorySchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  userName: { type: String },
+  pointsClaimed: { type: Number, required: true },
+  claimedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("ClaimHistory", claimSchema);
+module.exports = mongoose.model("ClaimHistory", claimHistorySchema);

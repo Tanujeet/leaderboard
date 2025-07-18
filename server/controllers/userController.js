@@ -1,22 +1,21 @@
-const User = require("../models/user");
+const User = require("../models/User");
 
-exports.getAllUsers = async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
 };
 
-exports.addUser = async (req, res) => {
-  const { name } = req.body;
-  const user = await User.create({ name });
-  res.status(201).json(user);
-};
-
-exports.getLeaderboard = async (req, res) => {
-  const users = await User.find().sort({ totalPoints: -1 });
-  const leaderboard = users.map((user, index) => ({
-    rank: index + 1,
-    name: user.name,
-    totalPoints: user.totalPoints,
-  }));
-  res.json(leaderboard);
+exports.createUser = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const newUser = new User({ name });
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(400).json({ error: "Failed to create user" });
+  }
 };

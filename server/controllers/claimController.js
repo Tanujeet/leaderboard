@@ -1,28 +1,36 @@
-const User = require("../models/user");
+const User = require("../models/User");
 const ClaimHistory = require("../models/ClaimHistory");
 
 exports.claimPoints = async (req, res) => {
-  const { userId } = req.body;
-  const points = Math.floor(Math.random() * 10) + 1;
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
 
-  const user = await User.findById(userId);
-  if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-  user.totalPoints += points;
-  await user.save();
+    const points = Math.floor(Math.random() * 10) + 1;
+    user.totalPoints += points;
+    await user.save();
 
-  const history = await ClaimHistory.create({ userId, points });
+    const history = new ClaimHistory({
+      userId,
+      userName: user.name,
+      pointsClaimed: points,
+    });
 
-  res.status(200).json({
-    message: `User ${user.name} claimed ${points} points.`,
-    user,
-    history,
-  });
+    await history.save();
+
+    res.json({ message: "Points claimed", points, user });
+  } catch (err) {
+    res.status(500).json({ error: "Error claiming points" });
+  }
 };
 
 exports.getHistory = async (req, res) => {
-  const history = await ClaimHistory.find()
-    .populate("userId", "name")
-    .sort({ claimedAt: -1 });
-  res.json(history);
+  try {
+    const history = await ClaimHistory.find().sort({ claimedAt: -1 });
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch history" });
+  }
 };
