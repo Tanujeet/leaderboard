@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { claimDailyPoints } = require("../controllers/claimController");
+const { claimPoints, getHistory } = require("../controllers/claimController");
 
-router.post("/", claimDailyPoints);
+router.post("/", claimPoints);
+router.get("/history", getHistory);
 
 module.exports = router;

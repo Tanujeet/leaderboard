@@ -1,23 +1,22 @@
 const User = require("../models/user");
 
-const createUser = async (req, res) => {
-  const { name, email } = req.body;
-
-  let user = await User.findOne({ email });
-  if (!user) {
-    user = await User.create({ name, email });
-  }
-
-  res.status(200).json(user);
+exports.getAllUsers = async (req, res) => {
+  const users = await User.find();
+  res.json(users);
 };
 
-const getUser = async (req, res) => {
-  const { email } = req.params;
-  const user = await User.findOne({ email });
-
-  if (!user) return res.status(404).json({ error: "User not found" });
-
-  res.json(user);
+exports.addUser = async (req, res) => {
+  const { name } = req.body;
+  const user = await User.create({ name });
+  res.status(201).json(user);
 };
 
-module.exports = { createUser, getUser };
+exports.getLeaderboard = async (req, res) => {
+  const users = await User.find().sort({ totalPoints: -1 });
+  const leaderboard = users.map((user, index) => ({
+    rank: index + 1,
+    name: user.name,
+    totalPoints: user.totalPoints,
+  }));
+  res.json(leaderboard);
+};

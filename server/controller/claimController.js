@@ -1,24 +1,28 @@
 const User = require("../models/user");
+const ClaimHistory = require("../models/ClaimHistory");
 
-const claimDailyPoints = async (req, res) => {
-  const { email } = req.body;
+exports.claimPoints = async (req, res) => {
+  const { userId } = req.body;
+  const points = Math.floor(Math.random() * 10) + 1;
 
-  const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ error: "User not found" });
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-  const now = new Date();
-  const lastClaimed = user.lastClaimed || new Date(0);
-  const hoursSinceLastClaim = (now - lastClaimed) / (1000 * 60 * 60);
-
-  if (hoursSinceLastClaim < 24) {
-    return res.status(400).json({ error: "Already claimed today" });
-  }
-
-  user.points += 10; // e.g., reward
-  user.lastClaimed = now;
+  user.totalPoints += points;
   await user.save();
 
-  res.json({ message: "Claim successful", user });
+  const history = await ClaimHistory.create({ userId, points });
+
+  res.status(200).json({
+    message: `User ${user.name} claimed ${points} points.`,
+    user,
+    history,
+  });
 };
 
-module.exports = { claimDailyPoints };
+exports.getHistory = async (req, res) => {
+  const history = await ClaimHistory.find()
+    .populate("userId", "name")
+    .sort({ claimedAt: -1 });
+  res.json(history);
+};
